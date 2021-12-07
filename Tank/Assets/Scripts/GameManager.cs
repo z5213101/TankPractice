@@ -1,4 +1,5 @@
 using Photon.Pun;
+using Photon.Realtime;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -21,5 +22,41 @@ public class GameManager : MonoBehaviourPunCallbacks
         PhotonNetwork.AutomaticallySyncScene = true;
         DontDestroyOnLoad(gameObject);
         instance = this;
+    }
+
+    void Start()
+    {
+        PhotonNetwork.ConnectUsingSettings();
+        PhotonNetwork.GameVersion = gameVersion;
+    }
+    public override void OnConnected()
+    {
+        Debug.Log("PUN connected");
+    }
+    public override void OnConnectedToMaster()
+    {
+        Debug.Log("PUN connected to Master");
+    }
+    public override void OnDisconnected(DisconnectCause cause)
+    {
+        Debug.LogWarningFormat("PUN Disconnected was called by PUN with reason {0}", cause);
+    }
+
+    public void JoinGameRoom()
+    {
+        Debug.Log("Try joining game");
+        var options = new RoomOptions
+        {
+            MaxPlayers = 6
+        };
+        PhotonNetwork.JoinOrCreateRoom("Kingdom", options, null);
+    }
+    public override void OnJoinedRoom()
+    {
+        Debug.Log("Joined room");
+    }
+    public override void OnJoinRoomFailed(short returnCode, string message)
+    {
+        Debug.LogWarningFormat("Joined room failed: {0}",message);
     }
 }
