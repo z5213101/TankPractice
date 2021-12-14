@@ -3,10 +3,12 @@ using Photon.Realtime;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviourPunCallbacks
 {
     public static GameManager instance;
+    public static GameObject localPlayer;
     string gameVersion = "1";
 
     private void Awake()
@@ -26,12 +28,14 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     void Start()
     {
+        SceneManager.sceneLoaded += OnSceneloaded;
         PhotonNetwork.ConnectUsingSettings();
         PhotonNetwork.GameVersion = gameVersion;
     }
     public override void OnConnected()
     {
         Debug.Log("PUN connected");
+        PhotonNetwork.AutomaticallySyncScene = true;    //Not sure where to add
     }
     public override void OnConnectedToMaster()
     {
@@ -53,10 +57,26 @@ public class GameManager : MonoBehaviourPunCallbacks
     }
     public override void OnJoinedRoom()
     {
-        Debug.Log("Joined room");
+        if (PhotonNetwork.IsMasterClient)
+        {
+            Debug.Log("Created room");
+            PhotonNetwork.LoadLevel("GameScene");
+        }
+        else
+            Debug.Log("Joined room");        
     }
     public override void OnJoinRoomFailed(short returnCode, string message)
     {
         Debug.LogWarningFormat("Joined room failed: {0}",message);
+    }
+
+    private void OnSceneloaded(Scene scene, LoadSceneMode mode)
+    {
+        if(!PhotonNetwork.InRoom)
+        {
+            return;
+        }
+        localPlayer = PhotonNetwork.Instantiate("TankPlayer", new Vector3(0, 0, 0), Quaternion.identity, 0);
+        Debug.Log("Player Instance ID: " + localPlayer.GetInstanceID());
     }
 }
