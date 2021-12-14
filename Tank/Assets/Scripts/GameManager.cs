@@ -2,6 +2,7 @@ using Photon.Pun;
 using Photon.Realtime;
 using System.Collections;
 using System.Collections.Generic;
+using Tanks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -10,6 +11,8 @@ public class GameManager : MonoBehaviourPunCallbacks
     public static GameManager instance;
     public static GameObject localPlayer;
     string gameVersion = "1";
+
+    private GameObject defaultSpawnPoint;
 
     private void Awake()
     {
@@ -24,8 +27,12 @@ public class GameManager : MonoBehaviourPunCallbacks
         PhotonNetwork.AutomaticallySyncScene = true;
         DontDestroyOnLoad(gameObject);
         instance = this;
-    }
 
+        defaultSpawnPoint = new GameObject("Default SpawnPoint");
+        defaultSpawnPoint.transform.position = new Vector3(0, 0, 0);
+        defaultSpawnPoint.transform.SetParent(transform, false);
+    }
+    #region Connection
     void Start()
     {
         SceneManager.sceneLoaded += OnSceneloaded;
@@ -76,7 +83,34 @@ public class GameManager : MonoBehaviourPunCallbacks
         {
             return;
         }
-        localPlayer = PhotonNetwork.Instantiate("TankPlayer", new Vector3(0, 0, 0), Quaternion.identity, 0);
+
+        var spawnPoint = GetRandomSpawnPoint();
+        localPlayer = PhotonNetwork.Instantiate(
+            "TankPlayer",
+            spawnPoint.position,
+            spawnPoint.rotation,
+            0);
         Debug.Log("Player Instance ID: " + localPlayer.GetInstanceID());
+    }
+    #endregion
+    public static List<GameObject> GetAllObjectsOfTypeInScene<T>()
+    {
+        var objsInScene = new List<GameObject>();
+        foreach(var go in (GameObject[])Resources.FindObjectsOfTypeAll(typeof(GameObject)))
+        {
+            if (go.hideFlags == HideFlags.NotEditable ||
+                go.hideFlags == HideFlags.HideAndDontSave)
+                continue;
+            if (go.GetComponent<T>() != null)
+                objsInScene.Add(go);
+        }
+        return objsInScene;
+    }
+    private Transform GetRandomSpawnPoint()
+    {
+        var SPs = GetAllObjectsOfTypeInScene<SpawnPoint>();
+        return SPs.Count == 0
+            ? defaultSpawnPoint.transform
+            : SPs[Random.Range(0, SPs.Count)].transform;
     }
 }
