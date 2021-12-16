@@ -24,7 +24,7 @@ namespace Complete
         private bool m_Fired;                       // Whether or not the shell has been launched with this button press.
 
 
-        private void OnEnable()
+        public override void OnEnable()
         {
             base.OnEnable();
             // When the tank is turned on, reset the launch force and the UI
