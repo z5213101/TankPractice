@@ -1,8 +1,10 @@
 ﻿using UnityEngine;
+using Photon.Pun;
+using Tanks;
 
 namespace Complete
 {
-    public class TankMovement : MonoBehaviour
+    public class TankMovement : MonoBehaviourPunCallbacks
     {
         public int m_PlayerNumber = 1;              // Used to identify which tank belongs to which player.  This is set by this tank's manager.
         public float m_Speed = 12f;                 // How fast the tank moves forward and back.
@@ -20,20 +22,37 @@ namespace Complete
         private float m_OriginalPitch;              // The pitch of the audio source at the start of the scene.
         private ParticleSystem[] m_particleSystems; // References to all the particles systems used by the Tanks
 
+        private GameObject m_Turret;
+        public Vector3 m_TurretPos;
+        public Quaternion m_TurretRot;
+        private string m_TurretRotationAxisName;
+        private float m_TurretRotationInputValue;
+
         private void Awake ()
         {
             m_Rigidbody = GetComponent<Rigidbody> ();
+            m_Turret = transform.FindAnyChild<Transform>("TankTurret").gameObject;
+            if (m_Turret != null)
+            {
+                m_TurretPos = m_Turret.transform.position;
+                m_TurretRot = m_Turret.transform.rotation;
+                Debug.Log("Turret foward =" + m_TurretPos);
+            }
+            else
+                Debug.Log("Can't find turret");
         }
 
-
-        private void OnEnable ()
+        public override void OnEnable ()
         {
+            base.OnEnable();
+            
             // When the tank is turned on, make sure it's not kinematic.
             m_Rigidbody.isKinematic = false;
 
             // Also reset the input values.
             m_MovementInputValue = 0f;
             m_TurnInputValue = 0f;
+            m_TurretRotationInputValue = 0f;
 
             // We grab all the Particle systems child of that Tank to be able to Stop/Play them on Deactivate/Activate
             // It is needed because we move the Tank when spawning it, and if the Particle System is playing while we do that
@@ -44,10 +63,10 @@ namespace Complete
                 m_particleSystems[i].Play();
             }
         }
-
-
-        private void OnDisable ()
+        public override void OnDisable ()
         {
+            base.OnDisable();
+            
             // When the tank is turned off, set it to kinematic so it stops moving.
             m_Rigidbody.isKinematic = true;
 
@@ -58,27 +77,28 @@ namespace Complete
             }
         }
 
-
         private void Start ()
         {
             // The axes names are based on player number.
             m_MovementAxisName = "Vertical";    // deleted (+ m_PlayerNumber)
             m_TurnAxisName = "Horizontal";  // deleted (+ m_PlayerNumber)
 
+            //Changed one label name in Input Manager(Unity Project Settings) to use
+            m_TurretRotationAxisName = "Horizontal Rotation";
+
             // Store the original pitch of the audio source.
             m_OriginalPitch = m_MovementAudio.pitch;
         }
-
 
         private void Update ()
         {
             // Store the value of both input axes.
             m_MovementInputValue = Input.GetAxis (m_MovementAxisName);
             m_TurnInputValue = Input.GetAxis (m_TurnAxisName);
-
+            m_TurretRotationInputValue = Input.GetAxis(m_TurretRotationAxisName);
+            
             EngineAudio ();
         }
-
 
         private void EngineAudio ()
         {
@@ -107,14 +127,13 @@ namespace Complete
             }
         }
 
-
         private void FixedUpdate ()
         {
             // Adjust the rigidbodies position and orientation in FixedUpdate.
             Move ();
             Turn ();
+            TurnTurret();
         }
-
 
         private void Move ()
         {
@@ -124,7 +143,6 @@ namespace Complete
             // Apply this movement to the rigidbody's position.
             m_Rigidbody.MovePosition(m_Rigidbody.position + movement);
         }
-
 
         private void Turn ()
         {
@@ -136,6 +154,24 @@ namespace Complete
 
             // Apply this rotation to the rigidbody's rotation.
             m_Rigidbody.MoveRotation (m_Rigidbody.rotation * turnRotation);
+        }
+
+        private void TurnTurret()
+        {
+            float turn = m_TurretRotationInputValue * m_TurnSpeed * Time.deltaTime;
+            Quaternion turnRotation = Quaternion.Euler(0f, turn, 0f);
+
+            photonView.RPC("TurretRotation", RpcTarget.Others, turnRotation);
+
+            m_Turret.transform.rotation = m_Turret.transform.rotation * turnRotation;
+            m_TurretPos = m_Turret.transform.forward;
+            m_TurretRot = m_Turret.transform.rotation;
+        }
+
+        [PunRPC]
+        private void TurretRotation(Quaternion turnRotation)
+        {
+            m_Turret.transform.rotation = m_Turret.transform.rotation * turnRotation;
         }
     }
 }
