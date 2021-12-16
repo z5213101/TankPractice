@@ -160,12 +160,12 @@ namespace Complete
         {
             float turn = m_TurretRotationInputValue * m_TurnSpeed * Time.deltaTime;
             Quaternion turnRotation = Quaternion.Euler(0f, turn, 0f);
+
+            photonView.RPC("TurretRotation", RpcTarget.Others, turnRotation);
+
             m_Turret.transform.rotation = m_Turret.transform.rotation * turnRotation;
             m_TurretPos = m_Turret.transform.forward;
             m_TurretRot = m_Turret.transform.rotation;
-            Debug.Log("pos = " + m_TurretPos + ", rot = " + m_TurretRot);
-
-            photonView.RPC("TurretRotation", RpcTarget.Others, turnRotation);
         }
 
         [PunRPC]
