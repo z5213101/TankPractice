@@ -445,7 +445,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2215323484740676739, guid: 5bdc03d8fd4ab01438153386da25b8e3, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2215323484740831534, guid: 5bdc03d8fd4ab01438153386da25b8e3, type: 3}
       propertyPath: sceneViewId
@@ -469,15 +469,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2215323484762417507, guid: 5bdc03d8fd4ab01438153386da25b8e3, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2215323484762417507, guid: 5bdc03d8fd4ab01438153386da25b8e3, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2215323484762532193, guid: 5bdc03d8fd4ab01438153386da25b8e3, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5bdc03d8fd4ab01438153386da25b8e3, type: 3}
