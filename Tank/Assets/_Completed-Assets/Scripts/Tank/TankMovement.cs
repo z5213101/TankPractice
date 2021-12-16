@@ -23,7 +23,8 @@ namespace Complete
         private ParticleSystem[] m_particleSystems; // References to all the particles systems used by the Tanks
 
         private GameObject m_Turret;
-        public Vector3 m_TurretF;
+        public Vector3 m_TurretPos;
+        public Quaternion m_TurretRot;
         private string m_TurretRotationAxisName;
         private float m_TurretRotationInputValue;
 
@@ -33,8 +34,9 @@ namespace Complete
             m_Turret = transform.FindAnyChild<Transform>("TankTurret").gameObject;
             if (m_Turret != null)
             {
-                m_TurretF = m_Turret.transform.forward;
-                Debug.Log("Turret foward =" + m_TurretF);
+                m_TurretPos = m_Turret.transform.position;
+                m_TurretRot = m_Turret.transform.rotation;
+                Debug.Log("Turret foward =" + m_TurretPos);
             }
             else
                 Debug.Log("Can't find turret");
@@ -159,8 +161,17 @@ namespace Complete
             float turn = m_TurretRotationInputValue * m_TurnSpeed * Time.deltaTime;
             Quaternion turnRotation = Quaternion.Euler(0f, turn, 0f);
             m_Turret.transform.rotation = m_Turret.transform.rotation * turnRotation;
-            m_TurretF = m_Turret.transform.forward;
-            Debug.Log(m_TurretF);
+            m_TurretPos = m_Turret.transform.forward;
+            m_TurretRot = m_Turret.transform.rotation;
+            Debug.Log("pos = " + m_TurretPos + ", rot = " + m_TurretRot);
+
+            photonView.RPC("TurretRotation", RpcTarget.Others, turnRotation);
+        }
+
+        [PunRPC]
+        private void TurretRotation(Quaternion turnRotation)
+        {
+            m_Turret.transform.rotation = m_Turret.transform.rotation * turnRotation;
         }
     }
 }

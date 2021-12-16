@@ -5080,6 +5080,8 @@ MonoBehaviour:
   m_EngineIdling: {fileID: 8300000, guid: 4932ab25b84dd7649b80af68a9660ddc, type: 3}
   m_EngineDriving: {fileID: 8300000, guid: d7ca9fb5aa30155449192b23d7fb3336, type: 3}
   m_PitchRange: 0.1
+  m_TurretPos: {x: 0, y: 0, z: 0}
+  m_TurretRot: {x: 0, y: 0, z: 0, w: 0}
 --- !u!114 &2215323484733628099
 MonoBehaviour:
   m_ObjectHideFlags: 0
